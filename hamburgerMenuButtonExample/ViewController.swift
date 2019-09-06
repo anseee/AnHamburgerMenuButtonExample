@@ -15,6 +15,63 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view.
     }
 
-
+    @IBAction func showMenu(_ sender: Any) {
+        let storyboard = UIStoryboard.init(name: "Main", bundle: nil)
+        
+        let vc: SecondViewController = storyboard.instantiateViewController(withIdentifier: "SecondViewController") as! SecondViewController
+        vc.modalPresentationStyle = .custom
+        vc.transitioningDelegate = self
+        
+        present(vc, animated: true, completion: nil)
+    }
+    
 }
 
+extension ViewController:  UIViewControllerTransitioningDelegate {
+    func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        return self
+    }
+    
+    func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        return self
+    }
+}
+
+extension ViewController: UIViewControllerAnimatedTransitioning {
+    func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
+        return 0.4
+    }
+    
+    func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
+        let fromView = transitionContext.viewController(forKey: .from)!.view!
+        let toView = transitionContext.viewController(forKey: .to)!.view!
+
+        let isPresentingDrawer = fromView == view
+        let drawerView = isPresentingDrawer ? toView : fromView
+        
+        if isPresentingDrawer {
+            transitionContext.containerView.addSubview(drawerView)
+        }
+        
+        let drawerSize = CGSize(
+            width: UIScreen.main.bounds.size.width,
+            height: UIScreen.main.bounds.size.height)
+
+        let offScreenDrawerFrame = CGRect(origin: CGPoint(x: drawerSize.width * -1, y:0), size: drawerSize)
+        let onScreenDrawerFrame = CGRect(origin: .zero, size: drawerSize)
+        
+        drawerView.frame = isPresentingDrawer ? offScreenDrawerFrame : onScreenDrawerFrame
+        
+        let animationDuration = transitionDuration(using: transitionContext)
+
+        UIView.animate(withDuration: animationDuration, animations: {
+            drawerView.frame = isPresentingDrawer ? onScreenDrawerFrame : offScreenDrawerFrame
+        }, completion: { (success) in
+            if !isPresentingDrawer {
+                drawerView.removeFromSuperview()
+            }
+
+            transitionContext.completeTransition(success)
+        })
+    }
+}
