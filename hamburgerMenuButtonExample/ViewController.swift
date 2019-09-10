@@ -13,6 +13,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+
     }
 
     @IBAction func showMenu(_ sender: Any) {
@@ -21,17 +22,15 @@ class ViewController: UIViewController {
         let vc: SecondViewController = storyboard.instantiateViewController(withIdentifier: "SecondViewController") as! SecondViewController
         vc.modalPresentationStyle = .custom
         vc.transitioningDelegate = self
-        
-        present(vc, animated: true, completion: nil)
+        self.present(vc, animated: true, completion: nil)
     }
-    
 }
 
 extension ViewController:  UIViewControllerTransitioningDelegate {
     func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         return self
     }
-    
+
     func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         return self
     }
@@ -43,8 +42,20 @@ extension ViewController: UIViewControllerAnimatedTransitioning {
     }
     
     func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
-        let fromView = transitionContext.viewController(forKey: .from)!.view!
-        let toView = transitionContext.viewController(forKey: .to)!.view!
+        let navigationController: UINavigationController
+        let fromView: UIView
+        let toView: UIView
+        
+        if transitionContext.viewController(forKey: .from)!.isKind(of: UINavigationController.self) {
+            navigationController = transitionContext.viewController(forKey: .from)! as! UINavigationController
+            fromView = navigationController.topViewController!.view!
+            toView = transitionContext.viewController(forKey: .to)!.view!
+        }
+        else {
+            navigationController = transitionContext.viewController(forKey: .to)! as! UINavigationController
+            fromView = transitionContext.viewController(forKey: .from)!.view!
+            toView = navigationController.topViewController!.view!
+        }
 
         let isPresentingDrawer = fromView == view
         let drawerView = isPresentingDrawer ? toView : fromView
